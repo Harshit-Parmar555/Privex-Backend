@@ -49,6 +49,10 @@ app.use(
 // Port
 const PORT = process.env.PORT || 4000;
 
+// Routes
+import { secretRouter } from "./src/routes/secret.route.js";
+app.use("/api/v1/secret", secretRouter);
+
 // App listening
 connectDb()
   .then(() => {
