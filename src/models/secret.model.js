@@ -13,6 +13,7 @@ const secretSchema = new mongoose.Schema({
   expireAt: {
     type: Date,
     required: true,
+    expires: 0,
   },
   viewed: {
     type: Boolean,
