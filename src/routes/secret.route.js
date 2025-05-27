@@ -3,6 +3,6 @@ import { createSecret } from "../controllers/secret.controller.js";
 
 const secretRouter = express.Router();
 
-secretRouter.post("/createSecter", createSecret);
+secretRouter.post("/createSecret", createSecret);
 
 export { secretRouter };
