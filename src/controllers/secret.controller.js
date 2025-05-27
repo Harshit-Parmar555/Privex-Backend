@@ -58,8 +58,8 @@ export const viewSecret = async (req, res) => {
     const encrypted = JSON.parse(secretDoc.encryptedSecret);
     const secretText = decrypt(encrypted);
 
-    // Mark as viewed
-    secretDoc.viewed = true;
+    await Secret.deleteOne({ uuid }); // Delete the secret after viewing
+
     await secretDoc.save();
 
     return res.status(200).json({ secretText });
