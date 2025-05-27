@@ -60,8 +60,6 @@ export const viewSecret = async (req, res) => {
 
     await Secret.deleteOne({ uuid }); // Delete the secret after viewing
 
-    await secretDoc.save();
-
     return res.status(200).json({ secretText });
   } catch (error) {
     return res
