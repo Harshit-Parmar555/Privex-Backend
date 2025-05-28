@@ -2,7 +2,7 @@
 import { createLogger, format, transports } from "winston";
 const { combine, timestamp, json, colorize } = format;
 
-// Logger functions
+// Console log format: colorized output with custom message structure
 const consoleLogFormat = format.combine(
   format.colorize(),
   format.printf(({ level, message, timestamp }) => {
@@ -10,6 +10,7 @@ const consoleLogFormat = format.combine(
   })
 );
 
+// Create and configure the logger instance
 const logger = createLogger({
   level: "info",
   format: combine(colorize(), timestamp(), json()),
