@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 
 export const createSecret = async (req, res) => {
   try {
-    const { secretText, expireAt } = req.body;
+    const { secretText, expireAt, viewOnce = false } = req.body;
 
     if (!secretText || !expireAt) {
       return res.status(400).json({
@@ -20,6 +20,7 @@ export const createSecret = async (req, res) => {
       uuid: uuidv4(),
       encryptedSecret: JSON.stringify(encrypted),
       expireAt: new Date(expireAt),
+      viewOnce,
     });
 
     await newSecret.save();
@@ -47,9 +48,6 @@ export const viewSecret = async (req, res) => {
     if (!secretDoc) {
       return res.status(404).json({ message: "Secret not found" });
     }
-    if (secretDoc.viewed) {
-      return res.status(410).json({ message: "Secret already viewed" });
-    }
     if (new Date() > secretDoc.expireAt) {
       return res.status(410).json({ message: "Secret expired" });
     }
@@ -58,7 +56,9 @@ export const viewSecret = async (req, res) => {
     const encrypted = JSON.parse(secretDoc.encryptedSecret);
     const secretText = decrypt(encrypted);
 
-    await Secret.deleteOne({ uuid }); // Delete the secret after viewing
+    if (secretDoc.viewOnce) {
+      await Secret.deleteOne({ uuid }); // Delete the secret after viewing if viewOnce is true
+    }
 
     return res.status(200).json({ secretText });
   } catch (error) {
