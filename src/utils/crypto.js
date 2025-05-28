@@ -1,15 +1,25 @@
-// server/utils/crypto.js
+// Import necessary modules
 import crypto from "crypto";
+
+// Dotenv configuration
 import dotenv from "dotenv";
 dotenv.config();
 
 const algorithm = "aes-256-cbc";
+
+// Throw error if key is missing
+if (!process.env.SECRET_ENCRYPTION_KEY) {
+  throw new Error("SECRET_ENCRYPTION_KEY is not set in environment variables.");
+}
+
 const secretKey = crypto
   .createHash("sha256")
   .update(process.env.SECRET_ENCRYPTION_KEY)
   .digest();
 
+// Encrypts a string using AES-256-CBC.
 const encrypt = (text) => {
+  if (typeof text !== "string") throw new TypeError("Text must be a string.");
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv(algorithm, secretKey, iv);
   const encrypted = Buffer.concat([
@@ -22,7 +32,9 @@ const encrypt = (text) => {
   };
 };
 
+// Decrypts a string using AES-256-CBC.
 const decrypt = ({ content, iv }) => {
+  if (!content || !iv) throw new Error("Invalid encrypted data.");
   const decipher = crypto.createDecipheriv(
     algorithm,
     secretKey,
@@ -35,4 +47,5 @@ const decrypt = ({ content, iv }) => {
   return decrypted.toString("utf8");
 };
 
+// Export the encrypt and decrypt functions
 export { encrypt, decrypt };
