@@ -4,6 +4,6 @@ import { createSecret, viewSecret } from "../controllers/secret.controller.js";
 const secretRouter = express.Router();
 
 secretRouter.post("/create-secret", createSecret);
-secretRouter.get("/get-secret/:uuid", viewSecret);
+secretRouter.get("/read-secret/:uuid", viewSecret);
 
 export { secretRouter };
