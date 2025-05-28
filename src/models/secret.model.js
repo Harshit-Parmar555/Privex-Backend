@@ -15,6 +15,10 @@ const secretSchema = new mongoose.Schema({
     required: true,
     expires: 0,
   },
+  viewOnce: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 export const Secret = mongoose.model("Secret", secretSchema);
