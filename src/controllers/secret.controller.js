@@ -1,6 +1,7 @@
 import { Secret } from "../models/secret.model.js";
 import { encrypt, decrypt } from "../utils/crypto.js";
 import { v4 as uuidv4 } from "uuid";
+import logger from "../utils/logger.js";
 
 export const createSecret = async (req, res) => {
   try {
@@ -12,6 +13,17 @@ export const createSecret = async (req, res) => {
       });
     }
 
+    // Validate expireAt
+    const expireDate = new Date(expireAt);
+    if (isNaN(expireDate.getTime())) {
+      return res.status(400).json({ message: "Invalid expiration date" });
+    }
+
+    // Optionally limit secret length
+    if (secretText.length > 1000) {
+      return res.status(400).json({ message: "Secret text too long" });
+    }
+
     // Encrypt the secret text
     const encrypted = encrypt(secretText);
 
@@ -19,7 +31,7 @@ export const createSecret = async (req, res) => {
     const newSecret = new Secret({
       uuid: uuidv4(),
       encryptedSecret: JSON.stringify(encrypted),
-      expireAt: new Date(expireAt),
+      expireAt: expireDate,
       viewOnce,
     });
 
@@ -31,8 +43,10 @@ export const createSecret = async (req, res) => {
       message: "Secret created successfully",
       uuid: newSecret.uuid,
       url,
+      expireAt: newSecret.expireAt,
     });
   } catch (error) {
+    logger.error(error);
     return res.status(500).json({
       message: "Error creating secret",
       error: error.message,
@@ -48,7 +62,12 @@ export const viewSecret = async (req, res) => {
     if (!secretDoc) {
       return res.status(404).json({ message: "Secret not found" });
     }
+
+    // If expired, delete if viewOnce, then return expired message
     if (new Date() > secretDoc.expireAt) {
+      if (secretDoc.viewOnce) {
+        await Secret.deleteOne({ uuid });
+      }
       return res.status(410).json({ message: "Secret expired" });
     }
 
@@ -56,12 +75,14 @@ export const viewSecret = async (req, res) => {
     const encrypted = JSON.parse(secretDoc.encryptedSecret);
     const secretText = decrypt(encrypted);
 
+    // If viewOnce, delete after reading
     if (secretDoc.viewOnce) {
-      await Secret.deleteOne({ uuid }); // Delete the secret after viewing if viewOnce is true
+      await Secret.deleteOne({ uuid });
     }
 
     return res.status(200).json({ secretText });
   } catch (error) {
+    logger.error(error);
     return res
       .status(500)
       .json({ message: "Error retrieving secret", error: error.message });
