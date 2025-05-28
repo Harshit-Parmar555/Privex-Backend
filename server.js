@@ -1,21 +1,31 @@
+// Description: This is the entry point for the server application.
+
+// dotenv configuration
 import dotenv from "dotenv";
 dotenv.config();
 
+// Importing necessary modules
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
 
-// database connection
+// Database connection
 import { connectDb } from "./src/db/connect.js";
 
-// express app
+// Logger configuration
+import logger from "./src/utils/logger.js";
+
+// Express app
 const app = express();
 
+// Frontend URL configuration
 const frontendUrl =
-  process.env.FRONTEND_URL == "production"
+  process.env.NODE_ENV === "production"
     ? process.env.FRONTEND_URL
     : "http://localhost:5173";
 
-// middleware
+// Middlewares
 app.use(
   cors({
     origin: frontendUrl,
@@ -23,22 +33,20 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(helmet());
 
-// Logger config
-import morgan from "morgan";
-import logger from "./src/utils/logger.js";
-
-// Commented out morgan logger format due to storage issue
+// Morgan logger setup
 const morganFormat = ":method :url :status :response-time ms";
 app.use(
   morgan(morganFormat, {
     stream: {
       write: (message) => {
+        const [method, url, status, responseTime] = message.split(" ");
         const logObject = {
-          method: message.split(" ")[0],
-          url: message.split(" ")[1],
-          status: message.split(" ")[2],
-          responseTime: message.split(" ")[3],
+          method,
+          url,
+          status,
+          responseTime,
         };
         logger.info(JSON.stringify(logObject));
       },
@@ -46,20 +54,33 @@ app.use(
   })
 );
 
-// Port
-const PORT = process.env.PORT || 4000;
+// Health check route
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 // Routes
 import { secretRouter } from "./src/routes/secret.route.js";
 app.use("/api/v1/secret", secretRouter);
 
+// Global error handler
+app.use((err, req, res, next) => {
+  logger.error(err.stack || err.message);
+  res.status(500).json({ message: "Internal Server Error" });
+});
+
+// Port
+const PORT = process.env.PORT || 4000;
+
 // App listening
 connectDb()
   .then(() => {
     app.listen(PORT, () => {
+      logger.info(`Server started on port ${PORT}`);
       console.log(`server started on port ${PORT}`);
     });
   })
   .catch((error) => {
+    logger.error(error);
     console.log(error);
   });
