@@ -35,24 +35,24 @@ app.use(
 app.use(express.json());
 app.use(helmet());
 
-// Morgan logger setup
-const morganFormat = ":method :url :status :response-time ms";
-app.use(
-  morgan(morganFormat, {
-    stream: {
-      write: (message) => {
-        const [method, url, status, responseTime] = message.split(" ");
-        const logObject = {
-          method,
-          url,
-          status,
-          responseTime,
-        };
-        logger.info(JSON.stringify(logObject));
-      },
-    },
-  })
-);
+// Morgan logger setup ( currently commented out due to storage issues )
+// const morganFormat = ":method :url :status :response-time ms";
+// app.use(
+//   morgan(morganFormat, {
+//     stream: {
+//       write: (message) => {
+//         const [method, url, status, responseTime] = message.split(" ");
+//         const logObject = {
+//           method,
+//           url,
+//           status,
+//           responseTime,
+//         };
+//         logger.info(JSON.stringify(logObject));
+//       },
+//     },
+//   })
+// );
 
 // Health check route
 app.get("/health", (req, res) => {
