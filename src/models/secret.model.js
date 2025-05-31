@@ -1,5 +1,7 @@
+// Importing necessary modules
 import mongoose from "mongoose";
 
+// Defining the schema for the Secret model
 const secretSchema = new mongoose.Schema(
   {
     uuid: {
@@ -24,4 +26,5 @@ const secretSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Exporting the Secret model
 export const Secret = mongoose.model("Secret", secretSchema);

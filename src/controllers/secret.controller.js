@@ -1,7 +1,10 @@
-import { Secret } from "../models/secret.model.js";
-import { encrypt, decrypt } from "../utils/crypto.js";
+// Importing necessary libraries
 import { v4 as uuidv4 } from "uuid";
+// Importing Utilities
 import logger from "../utils/logger.js";
+import { encrypt, decrypt } from "../utils/crypto.js";
+// Importing Secret model
+import { Secret } from "../models/secret.model.js";
 
 export const createSecret = async (req, res) => {
   try {
